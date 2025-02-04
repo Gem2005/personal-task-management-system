@@ -4,9 +4,9 @@ import { projects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
-export async function GET(req: NextRequest, context: { params: { id?: string } }) {
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
   try {
-    const projectId = context.params?.id;
+    const projectId = context.params.id; // Extract project ID
 
     if (!projectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
@@ -33,9 +33,9 @@ export async function GET(req: NextRequest, context: { params: { id?: string } }
   }
 }
 
-export async function PATCH(req: NextRequest, context: { params: { id?: string } }) {
+export async function PATCH(req: NextRequest, context: { params: { id: string } }) {
   try {
-    const projectId = context.params?.id;
+    const projectId = context.params.id;
 
     if (!projectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
@@ -65,9 +65,9 @@ export async function PATCH(req: NextRequest, context: { params: { id?: string }
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id?: string } }) {
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
   try {
-    const projectId = context.params?.id;
+    const projectId = context.params.id;
 
     if (!projectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
