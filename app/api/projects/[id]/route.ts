@@ -1,13 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
-// Fetch a project by ID
-export async function GET(req: Request, { params }: { params: Record<string, string> }) {
+export async function GET(req: NextRequest, context: { params: { id?: string } }) {
   try {
-    const projectId = params.id; // Extract the dynamic ID
+    const projectId = context.params?.id;
 
     if (!projectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
@@ -34,10 +33,9 @@ export async function GET(req: Request, { params }: { params: Record<string, str
   }
 }
 
-// Update a project by ID
-export async function PATCH(req: Request, { params }: { params: Record<string, string> }) {
+export async function PATCH(req: NextRequest, context: { params: { id?: string } }) {
   try {
-    const projectId = params.id;
+    const projectId = context.params?.id;
 
     if (!projectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
@@ -67,10 +65,9 @@ export async function PATCH(req: Request, { params }: { params: Record<string, s
   }
 }
 
-// Delete a project by ID
-export async function DELETE(req: Request, { params }: { params: Record<string, string> }) {
+export async function DELETE(req: NextRequest, context: { params: { id?: string } }) {
   try {
-    const projectId = params.id;
+    const projectId = context.params?.id;
 
     if (!projectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
