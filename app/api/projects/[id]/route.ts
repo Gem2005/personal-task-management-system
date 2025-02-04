@@ -1,96 +1,106 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { db } from '@/db';
-import { projects } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { auth } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { projects } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 
-// Handler for the API route
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
+// GET handler to fetch a specific project
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Authenticate the user
     const user = await auth();
     if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse and validate the project ID from the query parameters
-    const { id } = req.query;
-    const projectId = parseInt(id as string, 10);
+    const projectId = Number(params.id);
     if (isNaN(projectId)) {
-      return res.status(400).json({ error: 'Invalid project ID' });
+      return NextResponse.json({ error: "Invalid project ID" }, { status: 400 });
     }
 
-    // Handle different HTTP methods
-    switch (req.method) {
-      case 'GET':
-        // Fetch the specific project
-        const project = await db.query.projects.findFirst({
-          where: and(
-            eq(projects.id, projectId),
-            eq(projects.userId, user.id)
-          ),
-          with: {
-            tasks: true, // Include related tasks
-          },
-        });
+    const project = await db.query.projects.findFirst({
+      where: and(eq(projects.id, projectId), eq(projects.userId, user.id)),
+      with: {
+        tasks: true, // Include tasks related to this project
+      },
+    });
 
-        if (!project) {
-          return res.status(404).json({ error: 'Project not found' });
-        }
-
-        return res.status(200).json(project);
-
-      case 'PATCH':
-        // Update the project
-        const updateData = req.body;
-
-        const [updatedProject] = await db
-          .update(projects)
-          .set(updateData)
-          .where(
-            and(
-              eq(projects.id, projectId),
-              eq(projects.userId, user.id)
-            )
-          )
-          .returning();
-
-        if (!updatedProject) {
-          return res.status(404).json({ error: 'Project not found' });
-        }
-
-        return res.status(200).json(updatedProject);
-
-      case 'DELETE':
-        // Delete the project
-        const [deletedProject] = await db
-          .delete(projects)
-          .where(
-            and(
-              eq(projects.id, projectId),
-              eq(projects.userId, user.id)
-            )
-          )
-          .returning();
-
-        if (!deletedProject) {
-          return res.status(404).json({ error: 'Project not found' });
-        }
-
-        return res.status(200).json(deletedProject);
-
-      default:
-        // Method not allowed
-        res.setHeader('Allow', ['GET', 'PATCH', 'DELETE']);
-        return res
-          .status(405)
-          .json({ error: `Method ${req.method} Not Allowed` });
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
+
+    return NextResponse.json(project);
   } catch (error) {
-    console.error('Error handling project:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching project:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// PATCH handler to update a project
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await auth();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const projectId = Number(params.id);
+    if (isNaN(projectId)) {
+      return NextResponse.json({ error: "Invalid project ID" }, { status: 400 });
+    }
+
+    const body = await request.json();
+
+    const [project] = await db
+      .update(projects)
+      .set(body)
+      .where(and(eq(projects.id, projectId), eq(projects.userId, user.id)))
+      .returning();
+
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(project);
+  } catch (error) {
+    console.error("Error updating project:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// DELETE handler to delete a project
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await auth();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const projectId = Number(params.id);
+    if (isNaN(projectId)) {
+      return NextResponse.json({ error: "Invalid project ID" }, { status: 400 });
+    }
+
+    const [project] = await db
+      .delete(projects)
+      .where(and(eq(projects.id, projectId), eq(projects.userId, user.id)))
+      .returning();
+
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(project);
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
