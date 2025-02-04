@@ -4,19 +4,23 @@ import { projects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
-// GET handler to fetch a specific project
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+// Fetch a project by ID
+export async function GET(req: Request, { params }: { params: Record<string, string> }) {
   try {
+    const projectId = params.id; // Extract the dynamic ID
+
+    if (!projectId) {
+      return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
+    }
+
     const user = await auth();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const project = await db.query.projects.findFirst({
-      where: and(eq(projects.id, Number.parseInt(params.id)), eq(projects.userId, user.id)),
-      with: {
-        tasks: true, // Include tasks related to this project
-      },
+      where: and(eq(projects.id, Number(projectId)), eq(projects.userId, user.id)),
+      with: { tasks: true },
     });
 
     if (!project) {
@@ -30,50 +34,63 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-// PATCH handler to update a project
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+// Update a project by ID
+export async function PATCH(req: Request, { params }: { params: Record<string, string> }) {
   try {
+    const projectId = params.id;
+
+    if (!projectId) {
+      return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
+    }
+
     const user = await auth();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
-    const [project] = await db
+
+    const [updatedProject] = await db
       .update(projects)
       .set(body)
-      .where(and(eq(projects.id, Number.parseInt(params.id)), eq(projects.userId, user.id)))
+      .where(and(eq(projects.id, Number(projectId)), eq(projects.userId, user.id)))
       .returning();
 
-    if (!project) {
+    if (!updatedProject) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.json(project);
+    return NextResponse.json(updatedProject);
   } catch (error) {
     console.error("Error updating project:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// DELETE handler to delete a project
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+// Delete a project by ID
+export async function DELETE(req: Request, { params }: { params: Record<string, string> }) {
   try {
+    const projectId = params.id;
+
+    if (!projectId) {
+      return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
+    }
+
     const user = await auth();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [project] = await db
+    const [deletedProject] = await db
       .delete(projects)
-      .where(and(eq(projects.id, Number.parseInt(params.id)), eq(projects.userId, user.id)))
+      .where(and(eq(projects.id, Number(projectId)), eq(projects.userId, user.id)))
       .returning();
 
-    if (!project) {
+    if (!deletedProject) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.json(project);
+    return NextResponse.json(deletedProject);
   } catch (error) {
     console.error("Error deleting project:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
