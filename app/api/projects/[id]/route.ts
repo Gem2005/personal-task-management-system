@@ -5,7 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 // GET handler to fetch a specific project
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
   try {
     const user = await auth();
     if (!user) {
