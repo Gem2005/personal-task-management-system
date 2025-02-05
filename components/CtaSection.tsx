@@ -11,19 +11,19 @@ export function CTASection() {
       
       <div className="container relative px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-8 text-center">
-          <div 
+            <div 
             className="space-y-4 max-w-3xl mx-auto"
             style={{
-              background: "radial-gradient(circle at center, transparent, white 70%)",
+              background: "radial-gradient(circle at center, transparent, var(--background) 70%)",
             }}
-          >
+            >
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent">
               Ready to Get Started?
             </h2>
             <p className="mx-auto max-w-[600px] text-lg md:text-xl text-muted-foreground">
               Join thousands of users who are already managing their tasks more efficiently.
             </p>
-          </div>
+            </div>
 
           <div className="flex gap-4 flex-wrap justify-center">
             <Link href="/register">
