@@ -1,7 +1,7 @@
 import { fontFamily } from "tailwindcss/defaultTheme"
 
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
   darkMode: ["class"],
   content: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],
   theme: {
@@ -74,4 +74,6 @@ export default {
   },
   plugins: ["tailwindcss-animate"],
 }
+
+export default config;
 
