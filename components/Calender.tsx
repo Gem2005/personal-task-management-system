@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
-import { Badge } from "@/components/ui/Badge";
 import "react-day-picker/dist/style.css";
 import type { Task } from "@/types";
 
@@ -24,24 +23,7 @@ export function Calendar({ tasks }: CalendarProps) {
     return acc;
   }, {} as Record<string, Task[]>);
 
-  const renderDay = (day: Date) => {
-    const dayNumber = day.getDate();
-    const tasksForDay = tasksByDate[day.toDateString()] || [];
 
-    return (
-      <div className="relative">
-        <div className="text-center">{dayNumber}</div>
-        {tasksForDay.length > 0 && (
-          <Badge
-            variant="secondary"
-            className="absolute bottom-0 right-0 h-4 w-4 p-0 text-xs flex items-center justify-center bg-blue-500 text-white rounded-full"
-          >
-            {tasksForDay.length}
-          </Badge>
-        )}
-      </div>
-    );
-  };
 
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(new Date(month));
@@ -87,7 +69,6 @@ export function Calendar({ tasks }: CalendarProps) {
           hasTasks:
             "font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/20",
         }}
-        renderDay={renderDay}
       />
 
       {selectedDay && tasksByDate[selectedDay.toDateString()] && (

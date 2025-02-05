@@ -110,17 +110,18 @@ export default function ProjectTasks() {
         <div className="space-y-4">
           {tasks.map((task: Task) => (
             <TaskCard
-              key={task.id}
-              task={task}
-              onStatusChange={(status: "pending" | "completed") => 
-                updateMutation.mutate({ id: task.id, data: { status } })
-              }
-              onDelete={() => deleteMutation.mutate(task.id)}
-            />
+            key={task.id}
+            task={task}
+            onStatusChange={(id: number, status: "pending" | "completed") => 
+              updateMutation.mutate({ id, data: { status } })
+            }
+            onDelete={() => deleteMutation.mutate(task.id)}
+          />
           ))}
         </div>
       <CreateTaskDialog
         open={isCreateTaskDialogOpen}
+        onOpenChange={setIsCreateTaskDialogOpen}
         onClose={() => setIsCreateTaskDialogOpen(false)}
         onSuccess={async () => {
           await queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
@@ -130,12 +131,9 @@ export default function ProjectTasks() {
       {isEditTaskDialogOpen && taskToEdit && (
         <EditTaskDialog
           open={isEditTaskDialogOpen}
-          task={taskToEdit}
+          onOpenChange={setIsEditTaskDialogOpen}
+          editingTask={taskToEdit}
           onClose={() => {
-            setIsEditTaskDialogOpen(false);
-            setTaskToEdit(null);
-          }}
-          onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
             setIsEditTaskDialogOpen(false);
             setTaskToEdit(null);

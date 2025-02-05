@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, isValid, parse } from "date-fns";
+import { DayPicker } from "react-day-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
@@ -15,43 +17,56 @@ interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
 export function CreateTaskDialog({ open, onOpenChange, onClose }: CreateTaskDialogProps) {
   const queryClient = useQueryClient();
-
-  const [formData, setFormData] = useState<{
-    title: string;
-    description: string;
-    priority: "medium" | "low" | "high";
-    dueDay: string;
-    dueMonth: string;
-    dueYear: string;
-    dueHour: string;
-    dueMinute: string;
-    dueAmPm: string;
-  }>({
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [dateInputValue, setDateInputValue] = useState("");
+  const [month, setMonth] = useState(new Date());
+  
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
-    priority: "medium",
-    dueDay: "",
-    dueMonth: "",
-    dueYear: "",
-    dueHour: "",
-    dueMinute: "",
-    dueAmPm: "",
+    priority: "medium" as "low" | "medium" | "high",
+    dueHour: "12",
+    dueMinute: "00",
+    dueAmPm: "PM",
   });
 
-  const [daysInMonth, setDaysInMonth] = useState<number[]>([]);
-
   useEffect(() => {
-    const year = parseInt(formData.dueYear, 10);
-    const month = parseInt(formData.dueMonth, 10);
-    if (!isNaN(year) && !isNaN(month)) {
-      const days = new Date(year, month, 0).getDate();
-      setDaysInMonth(Array.from({ length: days }, (_, i) => i + 1));
+    if (!dialogRef.current) return;
+    if (isDatePickerOpen) {
+      dialogRef.current.showModal();
+    } else {
+      dialogRef.current.close();
     }
-  }, [formData.dueYear, formData.dueMonth]);
+  }, [isDatePickerOpen]);
+
+  const handleDaySelect = (date: Date | undefined) => {
+    if (!date) {
+      setDateInputValue("");
+      setSelectedDate(undefined);
+    } else {
+      setSelectedDate(date);
+      setDateInputValue(format(date, "MM/dd/yyyy"));
+    }
+    setIsDatePickerOpen(false);
+  };
+
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateInputValue(e.target.value);
+    const parsedDate = parse(e.target.value, "MM/dd/yyyy", new Date());
+    if (isValid(parsedDate)) {
+      setSelectedDate(parsedDate);
+      setMonth(parsedDate);
+    } else {
+      setSelectedDate(undefined);
+    }
+  };
 
   const createMutation = useMutation({
     mutationFn: createTask,
@@ -62,22 +77,21 @@ export function CreateTaskDialog({ open, onOpenChange, onClose }: CreateTaskDial
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedDate) return;
 
-    if (!formData.dueDay || !formData.dueMonth || !formData.dueYear || !formData.dueHour || !formData.dueMinute || !formData.dueAmPm) {
-      alert("Please fill in all date and time fields.");
-      return;
-    }
+    // Parse time
+    let hours = parseInt(formData.dueHour);
+    if (formData.dueAmPm === "PM" && hours !== 12) hours += 12;
+    if (formData.dueAmPm === "AM" && hours === 12) hours = 0;
 
-    const dueDateStr = `${formData.dueYear}-${formData.dueMonth.padStart(2, "0")}-${formData.dueDay.padStart(2, "0")} ${formData.dueHour.padStart(2, "0")}:${formData.dueMinute.padStart(2, "0")} ${formData.dueAmPm === "PM" ? " PM" : " AM"}`;
+    // Set time on selected date
+    const dueDate = new Date(selectedDate);
+    dueDate.setHours(hours);
+    dueDate.setMinutes(parseInt(formData.dueMinute));
 
-    const dueDate = new Date(dueDateStr);
-    if (isNaN(dueDate.getTime())) {
-      alert("Invalid date or time value.");
-      return;
-    }
-
+    // Create task
     const formattedData: Partial<Task> = {
       title: formData.title,
       description: formData.description,
@@ -92,7 +106,7 @@ export function CreateTaskDialog({ open, onOpenChange, onClose }: CreateTaskDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Task</DialogTitle>
+          <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -126,82 +140,84 @@ export function CreateTaskDialog({ open, onOpenChange, onClose }: CreateTaskDial
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="due-date">Due Date</Label>
-            <div className="flex space-x-2">
-              <Select
-                value={formData.dueDay}
-                onValueChange={(value) => setFormData({ ...formData, dueDay: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {daysInMonth.map((day) => (
-                    <SelectItem key={day} value={String(day)}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={formData.dueMonth}
-                onValueChange={(value) => setFormData({ ...formData, dueMonth: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <SelectItem key={month} value={String(month)}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Label htmlFor="date-input">Due Date</Label>
+            <div className="flex items-center gap-2">
               <Input
-                id="due-year"
-                placeholder="Year"
-                value={formData.dueYear}
-                onChange={(e) => setFormData({ ...formData, dueYear: e.target.value })}
+                id="date-input"
+                type="text"
+                value={dateInputValue}
+                placeholder="MM/dd/yyyy"
+                onChange={handleDateInputChange}
+                className="flex-1"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setIsDatePickerOpen(true)}
+                aria-label="Open calendar"
+              >
+                📅
+              </Button>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="due-time">Due Time</Label>
-            <div className="flex space-x-2">
-              <Select
+
+          <dialog
+            ref={dialogRef}
+            className="p-0 rounded-lg shadow-xl backdrop:bg-black/50"
+            onClose={() => setIsDatePickerOpen(false)}
+          >
+            <DayPicker
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDaySelect}
+              month={month}
+              onMonthChange={setMonth}
+              className="p-4"
+            />
+          </dialog>
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <Label>Hour</Label>
+              <Select 
                 value={formData.dueHour}
-                onValueChange={(value) => setFormData({ ...formData, dueHour: value })}
+                onValueChange={(value) => setFormData({...formData, dueHour: value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Hour" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
-                    <SelectItem key={hour} value={String(hour)}>
+                  {Array.from({length: 12}, (_, i) => i + 1).map(hour => (
+                    <SelectItem key={hour} value={hour.toString().padStart(2, '0')}>
                       {hour}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Minute</Label>
               <Select
                 value={formData.dueMinute}
-                onValueChange={(value) => setFormData({ ...formData, dueMinute: value })}
+                onValueChange={(value) => setFormData({...formData, dueMinute: value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Minute" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map((minute) => (
-                    <SelectItem key={minute} value={minute}>
-                      {minute}
+                  {Array.from({length: 60}, (_, i) => i).map(minute => (
+                    <SelectItem key={minute} value={minute.toString().padStart(2, '0')}>
+                      {minute.toString().padStart(2, '0')}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>AM/PM</Label>
               <Select
                 value={formData.dueAmPm}
-                onValueChange={(value) => setFormData({ ...formData, dueAmPm: value })}
+                onValueChange={(value) => setFormData({...formData, dueAmPm: value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="AM/PM" />
@@ -217,7 +233,7 @@ export function CreateTaskDialog({ open, onOpenChange, onClose }: CreateTaskDial
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create</Button>
+            <Button type="submit">Create Task</Button>
           </div>
         </form>
       </DialogContent>

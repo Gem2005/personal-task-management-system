@@ -82,6 +82,7 @@ export default function TasksPage() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["tasks"] })}
       />
     </div>
   );

@@ -40,7 +40,7 @@ export async function createTask(data: Partial<Task>): Promise<Task> {
 // Update an existing task by ID
 export async function updateTask({ id, data }: { id: number; data: Partial<Task> }): Promise<Task> {
   const res = await fetch(`${API_URL}/tasks/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },

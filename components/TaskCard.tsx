@@ -27,10 +27,12 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
     <>
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-bold">{task.title}</h3>
-          <Badge className={`${priorityColors[task.priority]} priority-${task.priority}`}>
-            {task.priority}
-          </Badge>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold">{task.title}</h3>
+              <Badge className={`${priorityColors[task.priority]} priority-${task.priority} w-fit`}>
+              {task.priority}
+              </Badge>
+            </div>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-500">{task.description}</p>

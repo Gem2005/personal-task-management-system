@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { format, isValid, parse } from "date-fns";
+import { DayPicker } from "react-day-picker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
@@ -14,62 +16,51 @@ import type { Task } from "@/types";
 interface EditTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  editingTask: Task | null;
+  editingTask: Task;
   onClose: () => void;
 }
 
 export function EditTaskDialog({ open, onOpenChange, editingTask, onClose }: EditTaskDialogProps) {
   const queryClient = useQueryClient();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date(editingTask.dueDate));
+  const [dateInputValue, setDateInputValue] = useState(format(new Date(editingTask.dueDate), "MM/dd/yyyy"));
+  const [month, setMonth] = useState(new Date(editingTask.dueDate));
 
-  const [formData, setFormData] = useState<{
-    title: string;
-    description: string;
-    priority: "medium" | "low" | "high";
-    dueDay: string;
-    dueMonth: string;
-    dueYear: string;
-    dueHour: string;
-    dueMinute: string;
-    dueAmPm: string;
-  }>({
-    title: "",
-    description: "",
-    priority: "medium",
-    dueDay: "",
-    dueMonth: "",
-    dueYear: "",
-    dueHour: "",
-    dueMinute: "",
-    dueAmPm: "",
+  const [formData, setFormData] = useState({
+    title: editingTask.title,
+    description: editingTask.description,
+    priority: editingTask.priority,
+    dueHour: format(new Date(editingTask.dueDate), "hh"),
+    dueMinute: format(new Date(editingTask.dueDate), "mm"),
+    dueAmPm: format(new Date(editingTask.dueDate), "a"),
   });
 
-  const [daysInMonth, setDaysInMonth] = useState<number[]>([]);
-
   useEffect(() => {
-    if (editingTask) {
-      const dueDate = new Date(editingTask.dueDate);
-      setFormData({
-        title: editingTask.title || "",
-        description: editingTask.description || "",
-        priority: editingTask.priority || "medium",
-        dueDay: String(dueDate.getDate()),
-        dueMonth: String(dueDate.getMonth() + 1),
-        dueYear: String(dueDate.getFullYear()),
-        dueHour: String(dueDate.getHours() % 12 || 12),
-        dueMinute: String(dueDate.getMinutes()).padStart(2, "0"),
-        dueAmPm: dueDate.getHours() >= 12 ? "PM" : "AM",
-      });
+    if (!dialogRef.current) return;
+    if (isDatePickerOpen) {
+      dialogRef.current.showModal();
+    } else {
+      dialogRef.current.close();
     }
-  }, [editingTask]);
+  }, [isDatePickerOpen]);
 
-  useEffect(() => {
-    const year = parseInt(formData.dueYear, 10);
-    const month = parseInt(formData.dueMonth, 10);
-    if (!isNaN(year) && !isNaN(month)) {
-      const days = new Date(year, month, 0).getDate();
-      setDaysInMonth(Array.from({ length: days }, (_, i) => i + 1));
+  const handleDaySelect = (date: Date | undefined) => {
+    if (!date) return;
+    setSelectedDate(date);
+    setDateInputValue(format(date, "MM/dd/yyyy"));
+    setIsDatePickerOpen(false);
+  };
+
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateInputValue(e.target.value);
+    const parsedDate = parse(e.target.value, "MM/dd/yyyy", new Date());
+    if (isValid(parsedDate)) {
+      setSelectedDate(parsedDate);
+      setMonth(parsedDate);
     }
-  }, [formData.dueYear, formData.dueMonth]);
+  };
 
   const updateMutation = useMutation({
     mutationFn: updateTask,
@@ -83,12 +74,12 @@ export function EditTaskDialog({ open, onOpenChange, editingTask, onClose }: Edi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.dueDay || !formData.dueMonth || !formData.dueYear || !formData.dueHour || !formData.dueMinute || !formData.dueAmPm) {
+    if (!formData.dueHour || !formData.dueMinute || !formData.dueAmPm) {
       alert("Please fill in all date and time fields.");
       return;
     }
 
-    const dueDateStr = `${formData.dueYear}-${formData.dueMonth.padStart(2, "0")}-${formData.dueDay.padStart(2, "0")} ${formData.dueHour.padStart(2, "0")}:${formData.dueMinute.padStart(2, "0")} ${formData.dueAmPm === "PM" ? " PM" : " AM"}`;
+    const dueDateStr = `${dateInputValue} ${formData.dueHour.padStart(2, "0")}:${formData.dueMinute.padStart(2, "0")} ${formData.dueAmPm}`;
 
     const dueDate = new Date(dueDateStr);
     if (isNaN(dueDate.getTime())) {
@@ -147,46 +138,42 @@ export function EditTaskDialog({ open, onOpenChange, editingTask, onClose }: Edi
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="due-date">Due Date</Label>
-            <div className="flex space-x-2">
-              <Select
-                value={formData.dueDay}
-                onValueChange={(value) => setFormData({ ...formData, dueDay: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {daysInMonth.map((day) => (
-                    <SelectItem key={day} value={String(day)}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={formData.dueMonth}
-                onValueChange={(value) => setFormData({ ...formData, dueMonth: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <SelectItem key={month} value={String(month)}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Label htmlFor="date-input">Due Date</Label>
+            <div className="flex items-center gap-2">
               <Input
-                id="due-year"
-                placeholder="Year"
-                value={formData.dueYear}
-                onChange={(e) => setFormData({ ...formData, dueYear: e.target.value })}
+                id="date-input"
+                type="text"
+                value={dateInputValue}
+                placeholder="MM/dd/yyyy"
+                onChange={handleDateInputChange}
+                className="flex-1"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setIsDatePickerOpen(true)}
+                aria-label="Open calendar"
+              >
+                📅
+              </Button>
             </div>
           </div>
+
+          <dialog
+            ref={dialogRef}
+            className="p-0 rounded-lg shadow-xl backdrop:bg-black/50"
+            onClose={() => setIsDatePickerOpen(false)}
+          >
+            <DayPicker
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDaySelect}
+              month={month}
+              onMonthChange={setMonth}
+              className="p-4"
+            />
+          </dialog>
           <div className="space-y-2">
             <Label htmlFor="due-time">Due Time</Label>
             <div className="flex space-x-2">
