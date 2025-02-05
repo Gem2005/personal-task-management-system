@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
+import { cn } from "@/lib/utils";
 import "react-day-picker/dist/style.css";
 import type { Task } from "@/types";
 
@@ -23,8 +24,6 @@ export function Calendar({ tasks }: CalendarProps) {
     return acc;
   }, {} as Record<string, Task[]>);
 
-
-
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(new Date(month));
   };
@@ -37,24 +36,21 @@ export function Calendar({ tasks }: CalendarProps) {
   };
 
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i);
-
   return (
-    <div className="space-y-4 p-4 bg-white shadow-md rounded-lg">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center space-x-2">
-          <select
-            value={currentMonth.getFullYear()}
-            onChange={handleYearChange}
-            className="p-2 bg-gray-200 rounded-md"
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+      <select
+        value={currentMonth.getFullYear()}
+        onChange={handleYearChange}
+        className="p-2 rounded-md border dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+      >
+        {years.map((year) => (
+        <option key={year} value={year}>{year}</option>
+        ))}
+      </select>
       </div>
+
+      <div className="p-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors">
       <DayPicker
         mode="single"
         selected={selectedDay}
@@ -62,28 +58,72 @@ export function Calendar({ tasks }: CalendarProps) {
         month={currentMonth}
         onMonthChange={handleMonthChange}
         showOutsideDays
+        className="dark:bg-gray-800"
         modifiers={{
-          hasTasks: (day) => !!tasksByDate[day.toDateString()],
+        hasFewTasks: (date) => {
+          const tasks = tasksByDate[date.toDateString()] || [];
+          return tasks.length > 0 && tasks.length <= 3;
+        },
+        hasSomeTasks: (date) => {
+          const tasks = tasksByDate[date.toDateString()] || [];
+          return tasks.length > 3 && tasks.length <= 7;
+        },
+        hasManyTasks: (date) => {
+          const tasks = tasksByDate[date.toDateString()] || [];
+          return tasks.length > 7;
+        }
         }}
-        modifiersClassNames={{
-          hasTasks:
-            "font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/20",
+        modifiersStyles={{
+        hasFewTasks: { color: '#3b82f6', fontWeight: 'bold' },   // Blue
+        hasSomeTasks: { color: '#eab308', fontWeight: 'bold' },  // Yellow
+        hasManyTasks: { color: '#ef4444', fontWeight: 'bold' }   // Red
+        }}
+        classNames={{
+        day: cn("dark:hover:bg-gray-700", "dark:focus:bg-gray-700"),
+        caption: "dark:text-gray-200",
+        head_cell: "dark:text-gray-400"
         }}
       />
+      </div>
 
       {selectedDay && tasksByDate[selectedDay.toDateString()] && (
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium text-gray-700">
-            Tasks for {selectedDay.toDateString()}
-          </h3>
-          <ul className="list-disc list-inside">
-            {tasksByDate[selectedDay.toDateString()].map((task) => (
-              <li key={task.id} className="text-gray-600">
-                {task.title}
-              </li>
-            ))}
-          </ul>
+      <div className="p-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors">
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+      Tasks for {selectedDay.toDateString()}
+      </h3>
+      <ul className="mt-2 space-y-2">
+      {tasksByDate[selectedDay.toDateString()]
+        .sort((a, b) => {
+        const priorityOrder = { high: 1, medium: 2, low: 3 };
+        return priorityOrder[a.priority as keyof typeof priorityOrder] - 
+             priorityOrder[b.priority as keyof typeof priorityOrder];
+        })
+        .map((task) => (
+        <li 
+        key={task.id} 
+        className="p-3 rounded-md border dark:border-gray-700"
+        >
+        <div className="flex justify-between items-start">
+        <div>
+        <h4 className="font-medium text-gray-900 dark:text-gray-100">
+          {task.title}
+        </h4>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+          {task.description}
+        </p>
         </div>
+        <span className={`px-2 py-1 text-xs rounded-full ${
+        task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+        }`}>
+        {task.priority}
+        </span>
+        </div>
+        </li>
+      ))}
+      </ul>
+      </div>
       )}
     </div>
   );

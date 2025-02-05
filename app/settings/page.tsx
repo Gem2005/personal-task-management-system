@@ -99,39 +99,59 @@ export default function SettingsPage() {
               </Button>
             </div>
             <div className="space-y-2 relative">
-              <Label htmlFor="newPassword">New Password</Label>
+              <Label 
+                htmlFor="newPassword" 
+                className="text-foreground dark:text-gray-200"
+              >
+                New Password
+              </Label>
               <Input
                 id="newPassword"
                 type={showNewPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               />
               <Button
                 type="button"
                 variant="ghost"
-                className="absolute right-2 top-8"
+                className="absolute right-2 top-8 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 onClick={() => setShowNewPassword(!showNewPassword)}
               >
-                {showNewPassword ? <EyeOff /> : <Eye />}
+                {showNewPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                )}
               </Button>
             </div>
             <div className="space-y-2 relative">
-              <Label htmlFor="repeatNewPassword">Repeat New Password</Label>
+              <Label 
+                htmlFor="repeatNewPassword"
+                className="text-foreground dark:text-gray-200"
+              >
+                Repeat New Password
+              </Label>
               <Input
                 id="repeatNewPassword"
                 type={showRepeatNewPassword ? "text" : "password"}
                 value={repeatNewPassword}
                 onChange={(e) => setRepeatNewPassword(e.target.value)}
                 required
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               />
               <Button
                 type="button"
                 variant="ghost"
-                className="absolute right-2 top-8"
+                className="absolute right-2 top-8 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 onClick={() => setShowRepeatNewPassword(!showRepeatNewPassword)}
               >
-                {showRepeatNewPassword ? <EyeOff /> : <Eye />}
+                {showRepeatNewPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                )}
               </Button>
             </div>
             {error && <p className="text-red-500">{error}</p>}

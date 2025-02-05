@@ -58,3 +58,60 @@
   }
 }
 
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 15s ease infinite;
+}
+
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: hsl(var(--background));
+  margin: 0;
+}
+.rdp-day_selected, 
+.rdp-day_selected:focus-visible, 
+.rdp-day_selected:hover {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.dark .rdp-day {
+  color: hsl(var(--foreground));
+}
+.dark .rdp-day_disabled {
+  color: hsl(var(--muted-foreground));
+}
+.dark .rdp-day_today {
+  background-color: hsl(var(--muted)/20);
+}
+.dark .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: hsl(var(--accent));
+}
+.rdp-day_hasTasks {
+  font-weight: bold;
+}
+.rdp-day_tasks_few {
+  color: hsl(var(--blue-500));
+}
+.dark .rdp-day_tasks_few {
+  color: hsl(var(--blue-400));
+}
+.rdp-day_tasks_some {
+  color: hsl(var(--yellow-500));
+}
+.dark .rdp-day_tasks_some {
+  color: hsl(var(--yellow-400));
+}
+.rdp-day_tasks_many {
+  color: hsl(var(--red-500));
+}
+.dark .rdp-day_tasks_many {
+  color: hsl(var(--red-400));
+}
+

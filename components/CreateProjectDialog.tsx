@@ -40,26 +40,28 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-card dark:bg-gray-800 border-border dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
+          <DialogTitle className="text-foreground dark:text-gray-100">Create New Project</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name" className="text-foreground dark:text-gray-200">Name</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
+              className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-foreground dark:text-gray-200">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             />
           </div>
           <div className="flex justify-end space-x-2">
@@ -73,4 +75,3 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     </Dialog>
   )
 }
-

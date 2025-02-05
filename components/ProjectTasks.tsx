@@ -64,38 +64,46 @@ export default function ProjectTasks() {
   return (
     <div className="container mx-auto p-4">
       {/* Header Cards */}
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex-1 space-y-4 p-4 md:p-8 bg-background dark:bg-gray-900 transition-colors">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Total Tasks</CardTitle>
+          <Card className="bg-card dark:bg-gray-800 border-border dark:border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-gray-400">
+                Total Tasks
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalTasks}</div>
+              <div className="text-2xl font-bold text-foreground dark:text-gray-100">{totalTasks}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Completed Tasks</CardTitle>
+          <Card className="bg-card dark:bg-gray-800 border-border dark:border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-gray-400">
+                Pending Tasks
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{completedTasksCount}</div>
+              <div className="text-2xl font-bold text-foreground dark:text-gray-100">{pendingTasksCount}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Pending Tasks</CardTitle>
+          <Card className="bg-card dark:bg-gray-800 border-border dark:border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-gray-400">
+                Completed Tasks
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{pendingTasksCount}</div>
+              <div className="text-2xl font-bold text-foreground dark:text-gray-100">{completedTasksCount}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Completion Rate</CardTitle>
+          <Card className="bg-card dark:bg-gray-800 border-border dark:border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-gray-400">
+                Completion Rate
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{completionRate}%</div>
+              <div className="text-2xl font-bold text-foreground dark:text-gray-100">{completionRate}%</div>
             </CardContent>
           </Card>
         </div>

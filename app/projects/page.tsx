@@ -25,9 +25,11 @@ export default function ProjectsPage() {
   );
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-background dark:bg-gray-900 transition-colors">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground dark:text-gray-100">
+          Projects
+        </h2>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           New Project
@@ -38,7 +40,7 @@ export default function ProjectsPage() {
           placeholder="Search projects..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="max-w-sm"
+          className="max-w-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
         />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

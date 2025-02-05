@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 import { Providers } from "@/components/Providers";
-import WithSidebar from "@/components/WithSidebar";
+import  WithSidebar  from "@/components/WithSidebar";
 import "./globals.css";
 import type React from "react"; // Added import for React
 

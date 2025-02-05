@@ -104,26 +104,28 @@ export function CreateTaskDialog({ open, onOpenChange, onClose }: CreateTaskDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-card dark:bg-gray-800 border-border dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle className="text-foreground dark:text-gray-100">Create New Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="text-foreground dark:text-gray-200">Title</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
+              className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-foreground dark:text-gray-200">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             />
           </div>
           <div className="space-y-2">
